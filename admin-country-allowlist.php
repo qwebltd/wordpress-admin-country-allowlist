@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name:  Admin Country Allowlist
-Plugin URI:   
+Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
 Version:      1.0
 Author:       QWeb Ltd
