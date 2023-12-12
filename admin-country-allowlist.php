@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.0
+Version:      1.0.1
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -76,13 +76,12 @@ Text Domain:  admin-country-allowlist
 
 	// Function to communicate with the API endpoint
 	function qweb_aca_ip_lookup($accessKey, $ip) {
-		$api = curl_init();
-		curl_setopt($api, CURLOPT_URL, 'https://apis.qweb.co.uk/ip-lookup/'.$accessKey.'/'.$ip.'.json');
-		curl_setopt($api, CURLOPT_RETURNTRANSFER, 1);
-		$response = curl_exec($api);
-		curl_close($api);
+		$response = wp_remote_retrieve_body(wp_remote_get('https://apis.qweb.co.uk/ip-lookup/'.$accessKey.'/'.$ip.'.json'));
 
-		return json_decode($response);
+		if($response !== '')
+			return json_decode($response);
+		else
+			return 'There was an error communicating with the lookup service.';
 	}
 
 	// Function to look up the country of the visitors IP and check that it's in the allow list
