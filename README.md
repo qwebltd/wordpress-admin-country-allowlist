@@ -18,11 +18,29 @@ As a single 17kb file, this is an exceptionally lightweight plugin. Built to be 
 This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/ip-lookup/) for IP to country lookups, and will not function without an active API key from this service. QWeb does provide a FREE tier for this API service, suitable for most websites. Please refer to the [QWeb Ltd API Terms of Use](https://apis.qweb.co.uk/console/eula) and [QWeb Ltd Privacy Policy](https://www.qweb.co.uk/privacy-policy).
 
 # Installation
-- Install from the Wordpress plugin repository, or [download the admin-country-allowlist.zip](admin-country-allowlist.zip) file and upload via your Wordpress admin dashboard.
-- Activate the Admin Country Allowlist plugin.
-- Log in to the [QWeb Ltd API console](https://apis.qweb.co.uk/console/), generate an API key for the IP Lookup API, and copy this key into the plugin's settings page.
-- Optionally, add additional countries to the allowlist as comma separated [ISO 3166-1 alpha-2 country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements).
-- Optionally choose to allow or disallow known proxy servers, even when they're located within the allowed countries.
+* Install from the Wordpress plugin repository, or [download the admin-country-allowlist.zip](admin-country-allowlist.zip) file and upload via your Wordpress admin dashboard.
+* Activate the Admin Country Allowlist plugin.
+* Log in to the [QWeb Ltd API console](https://apis.qweb.co.uk/console/), generate an API key for the IP Lookup API, and copy this key into the plugin's settings page.
+* Optionally, add additional countries to the allowlist as comma separated [ISO 3166-1 alpha-2 country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements).
+* Optionally choose to allow or disallow known proxy servers, even when they're located within the allowed countries.
+
+# Changelog
+
+= 1.0.2 =
+* Fixed an issue where some error messages incorrectly included the plugin cache directory as part of the text.
+* Fixed an issue where some __() function calls didn't include the plugin's text domain as a second parameter.
+* Replaced various instances of esc_html(__()) with esc_html__() for tidier code.
+* Added line breaks within various multi-parameter printf() function calls to improve code readability.
+* Added/amended various printf() and sprintf() function calls to separate variables from strings passed to __() translation functions.
+* Wrapped various $_SERVER variables with esc_html() function calls for improved security.
+* Renamed plugins_list_settings_link() function to qweb_aca_list_settings_link()
+
+= 1.0.1 =
+* Replaced Curl dependant code with wp_remote_get()
+* Tested with Wordpress 6.4.2
+
+= 1.0 =
+* Initial public release.
 
 # Uninstallation
 Simply deactivate and uninstall via the Wordpress dashboard. This plugin will self-clean on uninstallation, leaving no old cache files behind.
