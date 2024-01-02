@@ -15,6 +15,8 @@ The plugin creates a cache of IP information and automatically clears cache file
 
 As a single 17kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API]((https://apis.qweb.co.uk/ip-lookup/)), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
 
+This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/ip-lookup/) for IP to country lookups, and will not function without an active API key from this service. QWeb does provide a FREE tier for this API service, suitable for most websites. Please refer to the [QWeb Ltd API Terms of Use](https://apis.qweb.co.uk/console/eula) and [QWeb Ltd Privacy Policy](https://www.qweb.co.uk/privacy-policy).
+
 # Installation
 - Install from the Wordpress plugin repository, or [download the admin-country-allowlist.zip](admin-country-allowlist.zip) file and upload via your Wordpress admin dashboard.
 - Activate the Admin Country Allowlist plugin.
