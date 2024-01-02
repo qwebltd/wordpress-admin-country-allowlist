@@ -3,13 +3,17 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.0.1
+Version:      1.0.2
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
 License URI:  https://opensource.org/license/mit/
 Text Domain:  admin-country-allowlist
 */
+
+	// Prevent direct access
+	if(!defined( 'ABSPATH' ))
+		exit;
 
 	if(is_admin()) {
 		// Basic sanity checks and error outputs if logged in to the admin panel
@@ -19,13 +23,23 @@ Text Domain:  admin-country-allowlist
 
 		if(!is_dir($cacheDirectory) && !mkdir($cacheDirectory, 0755)) {
 			function qweb_aca_cache_folder_missing() {
-				printf( '<div class="%1$s"><h2>'.__('Admin Country Allowlist').'</h2><p>%2$s</p></div>', esc_attr('notice notice-error'), esc_html( __('Failed to automatically create the lookups cache folder. Please create the following folder, and ensure it\'s accessible with read:write permissions: '.$cacheDirectory, 'admin-country-allowlist')));
+				printf(
+					'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s %3$s</p></div>',
+					esc_attr('notice notice-error'),
+					esc_html__('Failed to automatically create the lookups cache folder. Please create the following folder, and ensure it\'s accessible with read:write permissions:', 'admin-country-allowlist'),
+					esc_html($cacheDirectory)
+				);
 			}
 
 			add_action('admin_notices', 'qweb_aca_cache_folder_missing');
 		} elseif(!is_writable($cacheDirectory)) {
 			function qweb_aca_cache_folder_not_writable() {
-				printf( '<div class="%1$s"><h2>'.__('Admin Country Allowlist').'</h2><p>%2$s</p></div>', esc_attr('notice notice-error'), esc_html( __('The following folder isn\'t currently accessible with read:write permissions: '.$cacheDirectory, 'admin-country-allowlist')));
+				printf(
+					'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s %3$s</p></div>',
+					esc_attr('notice notice-error'),
+					esc_html__('The following folder isn\'t currently accessible with read:write permissions:', 'admin-country-allowlist'),
+					esc_html($cacheDirectory)
+				);
 			}
 
 			add_action('admin_notices', 'qweb_aca_cache_folder_not_writable');
@@ -34,7 +48,11 @@ Text Domain:  admin-country-allowlist
 		// Check an access key is saved
 		if(trim(get_option('qweb_aca_access_key')) == '') {
 			function qweb_aca_access_key_missing() {
-				printf( '<div class="%1$s"><h2>'.__('Admin Country Allowlist').'</h2><p>%2$s</p></div>', esc_attr('notice notice-error'), esc_html( __('You need to obtain an API access key before this plugin can secure your website. Refer to the settings page for details.'.$cacheDirectory, 'admin-country-allowlist')));
+				printf(
+					'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
+					esc_attr('notice notice-error'),
+					esc_html__('You need to obtain an API access key before this plugin can secure your website. Refer to the settings page for details.', 'admin-country-allowlist')
+				);
 			}
 
 			add_action('admin_notices', 'qweb_aca_access_key_missing');
@@ -42,7 +60,11 @@ Text Domain:  admin-country-allowlist
 			// Check at least one country is allowed
 			if(!array(get_option('qweb_aca_allowed_countries')) || empty(get_option('qweb_aca_allowed_countries'))) {
 				function qweb_aca_empty_countries_list() {
-					printf( '<div class="%1$s"><h2>'.__('Admin Country Allowlist').'</h2><p>%2$s</p></div>', esc_attr('notice notice-error'), esc_html( __('You need to allow at least one country before this plugin can secure your website.'.$cacheDirectory, 'admin-country-allowlist')));
+					printf(
+						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
+						esc_attr('notice notice-error'),
+						esc_html__('You need to allow at least one country before this plugin can secure your website.', 'admin-country-allowlist')
+					);
 				}
 
 				add_action('admin_notices', 'qweb_aca_empty_countries_list');
@@ -53,18 +75,18 @@ Text Domain:  admin-country-allowlist
 	// Function to return the visitors IP
 	function qweb_aca_get_visitor_ip() {
 		// If using Cloudflare
-		if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && rest_is_ip_address($_SERVER['HTTP_CF_CONNECTING_IP']))
-			return $_SERVER['HTTP_CF_CONNECTING_IP'];
+		if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && rest_is_ip_address(esc_html($_SERVER['HTTP_CF_CONNECTING_IP'])))
+			return esc_html($_SERVER['HTTP_CF_CONNECTING_IP']);
 
 		// If behind a firewall
-		if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && rest_is_ip_address($_SERVER['HTTP_X_SUCURI_CLIENTIP']))
-			return $_SERVER['HTTP_X_SUCURI_CLIENTIP'];
-		elseif(isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && rest_is_ip_address($_SERVER['HTTP_INCAP_CLIENT_IP']))
-			return $_SERVER['HTTP_INCAP_CLIENT_IP'];
+		if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && rest_is_ip_address(esc_html($_SERVER['HTTP_X_SUCURI_CLIENTIP'])))
+			return esc_html($_SERVER['HTTP_X_SUCURI_CLIENTIP']);
+		elseif(isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && rest_is_ip_address(esc_html($_SERVER['HTTP_INCAP_CLIENT_IP'])))
+			return esc_html($_SERVER['HTTP_INCAP_CLIENT_IP']);
 
 		// Other headers can be forged by proxy servers, so we ignore them and just check REMOTE_ADDR at this point
-		if(isset($_SERVER['REMOTE_ADDR']) && rest_is_ip_address($_SERVER['REMOTE_ADDR']))
-			return $_SERVER['REMOTE_ADDR'];
+		if(isset($_SERVER['REMOTE_ADDR']) && rest_is_ip_address(esc_html($_SERVER['REMOTE_ADDR'])))
+			return esc_html(esc_html($_SERVER['REMOTE_ADDR']));
 
 		return false;
 	}
@@ -125,7 +147,11 @@ Text Domain:  admin-country-allowlist
 						exit;
 					}
 				} else
-					wp_mail(get_bloginfo('admin_email'), __('IP to country lookup failed!'), esc_html( __('The following response was received from the lookup API when attempting to verify the country of IP '.$ip.': '.$data->answer)));
+					wp_mail(get_bloginfo('admin_email'), __('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
+						__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
+						esc_html($ip),
+						esc_html($data->answer)
+					));
 			}
 		}
 
@@ -196,7 +222,7 @@ Text Domain:  admin-country-allowlist
 ?>
 	<div class="wrap">
 		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-		<p><?php echo __('Generate an access key for the IP Lookup API via the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a> and enter it here.'); ?></p>
+		<p><?php echo __('Generate an access key for the IP Lookup API via the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a> and enter it here.', 'admin-country-allowlist'); ?></p>
 <?php
 		// show error/update messages
 		settings_errors( 'qweb_aca_messages' );
@@ -239,9 +265,13 @@ Text Domain:  admin-country-allowlist
 						update_option('qweb_aca_allowed_countries', implode(',', $allowedCountries));
 					}
 				} else
-					add_settings_error('qweb_aca_access_key', 'qweb_aca_access_key_error', __('The following response was received from the lookup API when attempting to verify the country of IP '.$ip.': '.$data->answer), 'error');
+					add_settings_error('qweb_aca_access_key', 'qweb_aca_access_key_error', sprintf(
+						__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
+						esc_html($ip),
+						esc_html($data->answer),
+					), 'error');
 			} else
-				add_settings_error('qweb_aca_access_key', 'qweb_aca_access_key_error', __('You must enter a valid access key'), 'error');
+				add_settings_error('qweb_aca_access_key', 'qweb_aca_access_key_error', __('You must enter a valid access key', 'admin-country-allowlist'), 'error');
 
 			// Output sanitised value for Wordpress to save
 			return $accessKey;
@@ -293,14 +323,14 @@ Text Domain:  admin-country-allowlist
 		add_settings_field('qweb_aca_access_key', 'Access key', function() {
 			echo '
 				<input name="qweb_aca_access_key" type="text" id="qweb_aca_access_key" value="'.esc_attr(get_option('qweb_aca_access_key')).'" class="regular-text" />
-				<p class="description">'.__('Your access key provided by the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a>.').'</p>';
+				<p class="description">'.__('Your access key provided by the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a>.', 'admin-country-allowlist').'</p>';
 		}, __FILE__, 'qweb_aca_options_general');
 
 		add_settings_field( 'qweb_aca_allowed_countries', 'Allowed countries', function() {
 			// TODO need a fancy mechanic to make populating this field easier, while keeping it a text input for copy + paste population
 			echo '
 				<input name="qweb_aca_allowed_countries" type="text" id="qweb_aca_allowed_countries" value="'.esc_attr(implode(',', get_option('qweb_aca_allowed_countries'))).'" class="regular-text" />
-				<p class="description">'.__('Comma separated list of <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements" target="_blank">ISO 3166-1 alpha-2 country codes</a> you allow admin panel access to.').'</p>';
+				<p class="description">'.__('Comma separated list of <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements" target="_blank">ISO 3166-1 alpha-2 country codes</a> you allow admin panel access to.', 'admin-country-allowlist').'</p>';
 		}, __FILE__, 'qweb_aca_options_general');
 
 		add_settings_field( 'qweb_aca_allow_known_proxies', 'Allow known proxies?', function() {
@@ -308,21 +338,21 @@ Text Domain:  admin-country-allowlist
 
 			echo '
 				<select name="qweb_aca_allow_known_proxies" id="qweb_aca_allow_known_proxies">
-					<option value="yes"'.($currentValue ? ' selected="selected"' : '').'>'.__('Allow').'</option>
-					<option value="no"'.(!$currentValue ? ' selected="selected"' : '').'>'.__('Disallow').'</option>
+					<option value="yes"'.($currentValue ? ' selected="selected"' : '').'>'.__('Allow', 'admin-country-allowlist').'</option>
+					<option value="no"'.(!$currentValue ? ' selected="selected"' : '').'>'.__('Disallow', 'admin-country-allowlist').'</option>
 				</select>
-				<p class="description">'.__('If an IP is from an allowed country, but we know it to be a proxy server, should we still allow access?').'</p>';
+				<p class="description">'.__('If an IP is from an allowed country, but we know it to be a proxy server, should we still allow access?', 'admin-country-allowlist').'</p>';
 		}, __FILE__, 'qweb_aca_options_general');
 	}
 
 	// Function to add a settings link to the plugin in the plugins list
-	function plugins_list_settings_link($links) {
+	function qweb_aca_list_settings_link($links) {
 		// Filters the links in the plugin item of the plugins list, to include a settings link too
-		array_push($links, '<a href="'.admin_url( 'options-general.php?page='.plugin_basename(__FILE__)).'">'.__('Settings').'</a>');
+		array_push($links, '<a href="'.admin_url( 'options-general.php?page='.plugin_basename(__FILE__)).'">'.__('Settings', 'admin-country-allowlist').'</a>');
 		return $links;
 	}
 
-	add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'plugins_list_settings_link');
+	add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'qweb_aca_list_settings_link');
 
 	// Function to clear old cache files
 	function qweb_aca_clear_old_cache() {
