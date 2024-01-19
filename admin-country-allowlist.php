@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.0.2
+Version:      1.0.3
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -75,18 +75,18 @@ Text Domain:  admin-country-allowlist
 	// Function to return the visitors IP
 	function qweb_aca_get_visitor_ip() {
 		// If using Cloudflare
-		if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && rest_is_ip_address(esc_html($_SERVER['HTTP_CF_CONNECTING_IP'])))
-			return esc_html($_SERVER['HTTP_CF_CONNECTING_IP']);
+		if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && rest_is_ip_address(sanitize_text_field($_SERVER['HTTP_CF_CONNECTING_IP'])))
+			return sanitize_text_field($_SERVER['HTTP_CF_CONNECTING_IP']);
 
 		// If behind a firewall
-		if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && rest_is_ip_address(esc_html($_SERVER['HTTP_X_SUCURI_CLIENTIP'])))
-			return esc_html($_SERVER['HTTP_X_SUCURI_CLIENTIP']);
-		elseif(isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && rest_is_ip_address(esc_html($_SERVER['HTTP_INCAP_CLIENT_IP'])))
-			return esc_html($_SERVER['HTTP_INCAP_CLIENT_IP']);
+		if(isset($_SERVER['HTTP_X_SUCURI_CLIENTIP']) && rest_is_ip_address(sanitize_text_field($_SERVER['HTTP_X_SUCURI_CLIENTIP'])))
+			return sanitize_text_field($_SERVER['HTTP_X_SUCURI_CLIENTIP']);
+		elseif(isset($_SERVER['HTTP_INCAP_CLIENT_IP']) && rest_is_ip_address(sanitize_text_field($_SERVER['HTTP_INCAP_CLIENT_IP'])))
+			return sanitize_text_field($_SERVER['HTTP_INCAP_CLIENT_IP']);
 
 		// Other headers can be forged by proxy servers, so we ignore them and just check REMOTE_ADDR at this point
-		if(isset($_SERVER['REMOTE_ADDR']) && rest_is_ip_address(esc_html($_SERVER['REMOTE_ADDR'])))
-			return esc_html(esc_html($_SERVER['REMOTE_ADDR']));
+		if(isset($_SERVER['REMOTE_ADDR']) && rest_is_ip_address(sanitize_text_field($_SERVER['REMOTE_ADDR'])))
+			return sanitize_text_field($_SERVER['REMOTE_ADDR']);
 
 		return false;
 	}
