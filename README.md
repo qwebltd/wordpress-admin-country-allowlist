@@ -26,6 +26,9 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 
 # Changelog
 
+= 1.0.3 =
+* Replaced esc_html() wrapped $_SERVER variables with sanitize_text_field() wraps.
+
 = 1.0.2 =
 * Fixed an issue where some error messages incorrectly included the plugin cache directory as part of the text.
 * Fixed an issue where some __() function calls didn't include the plugin's text domain as a second parameter.
