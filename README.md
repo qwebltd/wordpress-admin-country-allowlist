@@ -13,12 +13,12 @@ You can optionally choose to allow or disallow access through known public proxy
 
 The plugin creates a cache of IP information and automatically clears cache files older than one week. This reduces the number of lookup requests and keeps your website responsive, without creating an unnecessarily large cache.
 
-As a single 17kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API]((https://apis.qweb.co.uk/ip-lookup/)), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
+As a single 17kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API](https://apis.qweb.co.uk/ip-lookup/), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
 
 This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/ip-lookup/) for IP to country lookups, and will not function without an active API key from this service. QWeb does provide a FREE tier for this API service, suitable for most websites. Please refer to the [QWeb Ltd API Terms of Use](https://apis.qweb.co.uk/console/eula) and [QWeb Ltd Privacy Policy](https://www.qweb.co.uk/privacy-policy).
 
 # Installation
-* Install from the Wordpress plugin repository, or [download the admin-country-allowlist.zip](admin-country-allowlist.zip) file and upload via your Wordpress admin dashboard.
+* Install from the [Wordpress plugin repository](https://wordpress.org/plugins/admin-country-allowlist/), or [download the admin-country-allowlist.zip](admin-country-allowlist.zip) file and upload via your Wordpress admin dashboard.
 * Activate the Admin Country Allowlist plugin.
 * Log in to the [QWeb Ltd API console](https://apis.qweb.co.uk/console/), generate an API key for the IP Lookup API, and copy this key into the plugin's settings page.
 * Optionally, add additional countries to the allowlist as comma separated [ISO 3166-1 alpha-2 country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements).
