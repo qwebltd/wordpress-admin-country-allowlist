@@ -26,6 +26,11 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 
 # Changelog
 
+= 1.1.0 =
+* Reworked to no longer block calls for admin-ajax.php, because too many front-end plugins use it for legitimate requests.
+* Enabled installation for websites running PHP as old as 5.6, and Wordpress as old as 5.8.
+* Fixed a minor bug where sanitisation code called array() instead of is_array(), and thus wouldn't have spotted some broken configurations.
+
 = 1.0.3 =
 * Replaced esc_html() wrapped $_SERVER variables with sanitize_text_field() wraps.
 
