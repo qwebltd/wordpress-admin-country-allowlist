@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.0.3
+Version:      1.1.0
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -15,7 +15,8 @@ Text Domain:  admin-country-allowlist
 	if(!defined( 'ABSPATH' ))
 		exit;
 
-	if(is_admin()) {
+	// admin-ajax.php requests cause is_admin() to return true, but front end plugins also use it so we shouldn't block
+	if(is_admin() && strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) {
 		// Basic sanity checks and error outputs if logged in to the admin panel
 
 		// Check cache directory exists
@@ -112,7 +113,7 @@ Text Domain:  admin-country-allowlist
 		$accessKey = trim(get_option('qweb_aca_access_key'));
 		$allowedCountries = get_option('qweb_aca_allowed_countries');
 
-		if($accessKey != '' && array($allowedCountries) && !empty($allowedCountries)) {
+		if($accessKey != '' && is_array($allowedCountries) && !empty($allowedCountries)) {
 			$ip = qweb_aca_get_visitor_ip();
 
 			// To prevent getting accidentally locked out of Wordpress due to a bad server config, if we can't determine the visitor IP, just allow access
@@ -268,7 +269,7 @@ Text Domain:  admin-country-allowlist
 					add_settings_error('qweb_aca_access_key', 'qweb_aca_access_key_error', sprintf(
 						__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
 						esc_html($ip),
-						esc_html($data->answer),
+						esc_html($data->answer)
 					), 'error');
 			} else
 				add_settings_error('qweb_aca_access_key', 'qweb_aca_access_key_error', __('You must enter a valid access key', 'admin-country-allowlist'), 'error');
@@ -392,5 +393,6 @@ Text Domain:  admin-country-allowlist
 	add_filter('admin_init', 'qweb_aca_ip_check');
 
 	// Determine if this is a request for an admin page that doesn't trigger admin_init (because we're not yet logged in, for example), or for the XMLRPC mechanic which is basically an admin endpoint
-	if(is_admin() || (stripos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false && ($GLOBALS['pagenow'] === 'wp-login.php' || $_SERVER['PHP_SELF'] === '/wp-login.php') && stripos($_SERVER['REQUEST_URI'], 'redirect_to='.admin_url()) !== false) || (defined('XMLRPC_REQUEST') && XMLRPC_REQUEST))
+	// admin-ajax.php requests cause is_admin() to return true, but front end plugins also use it so we shouldn't block
+	if((is_admin() && strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) || (stripos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false && ($GLOBALS['pagenow'] === 'wp-login.php' || $_SERVER['PHP_SELF'] === '/wp-login.php') && stripos($_SERVER['REQUEST_URI'], 'redirect_to='.admin_url()) !== false) || (defined('XMLRPC_REQUEST') && XMLRPC_REQUEST))
 		add_action('init', 'qweb_aca_ip_check');
