@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.1.0
+Version:      1.1.1
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -14,64 +14,6 @@ Text Domain:  admin-country-allowlist
 	// Prevent direct access
 	if(!defined( 'ABSPATH' ))
 		exit;
-
-	// admin-ajax.php requests cause is_admin() to return true, but front end plugins also use it so we shouldn't block
-	if(is_admin() && strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) {
-		// Basic sanity checks and error outputs if logged in to the admin panel
-
-		// Check cache directory exists
-		$cacheDirectory = qweb_aca_cache_folder();
-
-		if(!is_dir($cacheDirectory) && !mkdir($cacheDirectory, 0755)) {
-			function qweb_aca_cache_folder_missing() {
-				printf(
-					'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s %3$s</p></div>',
-					esc_attr('notice notice-error'),
-					esc_html__('Failed to automatically create the lookups cache folder. Please create the following folder, and ensure it\'s accessible with read:write permissions:', 'admin-country-allowlist'),
-					esc_html($cacheDirectory)
-				);
-			}
-
-			add_action('admin_notices', 'qweb_aca_cache_folder_missing');
-		} elseif(!is_writable($cacheDirectory)) {
-			function qweb_aca_cache_folder_not_writable() {
-				printf(
-					'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s %3$s</p></div>',
-					esc_attr('notice notice-error'),
-					esc_html__('The following folder isn\'t currently accessible with read:write permissions:', 'admin-country-allowlist'),
-					esc_html($cacheDirectory)
-				);
-			}
-
-			add_action('admin_notices', 'qweb_aca_cache_folder_not_writable');
-		}
-
-		// Check an access key is saved
-		if(trim(get_option('qweb_aca_access_key')) == '') {
-			function qweb_aca_access_key_missing() {
-				printf(
-					'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
-					esc_attr('notice notice-error'),
-					esc_html__('You need to obtain an API access key before this plugin can secure your website. Refer to the settings page for details.', 'admin-country-allowlist')
-				);
-			}
-
-			add_action('admin_notices', 'qweb_aca_access_key_missing');
-		} else {
-			// Check at least one country is allowed
-			if(!array(get_option('qweb_aca_allowed_countries')) || empty(get_option('qweb_aca_allowed_countries'))) {
-				function qweb_aca_empty_countries_list() {
-					printf(
-						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
-						esc_attr('notice notice-error'),
-						esc_html__('You need to allow at least one country before this plugin can secure your website.', 'admin-country-allowlist')
-					);
-				}
-
-				add_action('admin_notices', 'qweb_aca_empty_countries_list');
-			}
-		}
-	}
 
 	// Function to return the visitors IP
 	function qweb_aca_get_visitor_ip() {
@@ -353,8 +295,6 @@ Text Domain:  admin-country-allowlist
 		return $links;
 	}
 
-	add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'qweb_aca_list_settings_link');
-
 	// Function to clear old cache files
 	function qweb_aca_clear_old_cache() {
 		$cacheDirectory = qweb_aca_cache_folder();
@@ -376,6 +316,10 @@ Text Domain:  admin-country-allowlist
 		add_options_page('Admin Country Allowlist', 'Admin Country Allowlist', 'administrator', __FILE__, 'qweb_aca_settings_page');
 	}
 
+	// Add settings link to the plugins list page
+	add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'qweb_aca_list_settings_link');
+
+	// Add settings link to the menu
 	add_action('admin_menu', 'qweb_aca_create_menu');
 
 	// Register the settings
@@ -389,10 +333,69 @@ Text Domain:  admin-country-allowlist
 	// Cron event to delete old cache every week. This is scheduled during activation
 	add_action('qweb_aca_clear_old_cache_event', 'qweb_aca_clear_old_cache');
 
-	// Hook in to the init routine of all admin pages and scripts
-	add_filter('admin_init', 'qweb_aca_ip_check');
-
-	// Determine if this is a request for an admin page that doesn't trigger admin_init (because we're not yet logged in, for example), or for the XMLRPC mechanic which is basically an admin endpoint
 	// admin-ajax.php requests cause is_admin() to return true, but front end plugins also use it so we shouldn't block
-	if((is_admin() && strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) || (stripos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false && ($GLOBALS['pagenow'] === 'wp-login.php' || $_SERVER['PHP_SELF'] === '/wp-login.php') && stripos($_SERVER['REQUEST_URI'], 'redirect_to='.admin_url()) !== false) || (defined('XMLRPC_REQUEST') && XMLRPC_REQUEST))
-		add_action('init', 'qweb_aca_ip_check');
+	if(strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) {
+		if(is_admin()) {
+			// Basic sanity checks and error outputs if logged in to the admin panel
+
+			// Check cache directory exists
+			$qwebAcaCacheDirectory = qweb_aca_cache_folder();
+
+			if(!is_dir($qwebAcaCacheDirectory) && !mkdir($qwebAcaCacheDirectory, 0755)) {
+				function qweb_aca_cache_folder_missing() {
+					printf(
+						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s %3$s</p></div>',
+						esc_attr('notice notice-error'),
+						esc_html__('Failed to automatically create the lookups cache folder. Please create the following folder, and ensure it\'s accessible with read:write permissions:', 'admin-country-allowlist'),
+						esc_html($qwebAcaCacheDirectory)
+					);
+				}
+
+				add_action('admin_notices', 'qweb_aca_cache_folder_missing');
+			} elseif(!is_writable($qwebAcaCacheDirectory)) {
+				function qweb_aca_cache_folder_not_writable() {
+					printf(
+						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s %3$s</p></div>',
+						esc_attr('notice notice-error'),
+						esc_html__('The following folder isn\'t currently accessible with read:write permissions:', 'admin-country-allowlist'),
+						esc_html($qwebAcaCacheDirectory)
+					);
+				}
+
+				add_action('admin_notices', 'qweb_aca_cache_folder_not_writable');
+			}
+
+			// Check an access key is saved
+			if(trim(get_option('qweb_aca_access_key')) == '') {
+				function qweb_aca_access_key_missing() {
+					printf(
+						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
+						esc_attr('notice notice-error'),
+						esc_html__('You need to obtain an API access key before this plugin can secure your website. Refer to the settings page for details.', 'admin-country-allowlist')
+					);
+				}
+
+				add_action('admin_notices', 'qweb_aca_access_key_missing');
+			} else {
+				// Check at least one country is allowed
+				if(!array(get_option('qweb_aca_allowed_countries')) || empty(get_option('qweb_aca_allowed_countries'))) {
+					function qweb_aca_empty_countries_list() {
+						printf(
+							'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
+							esc_attr('notice notice-error'),
+							esc_html__('You need to allow at least one country before this plugin can secure your website.', 'admin-country-allowlist')
+						);
+					}
+
+					add_action('admin_notices', 'qweb_aca_empty_countries_list');
+				}
+			}
+		}
+
+		// Hook in to the init routine of all admin pages and scripts
+		add_filter('admin_init', 'qweb_aca_ip_check');
+
+		// Determine if this is a request for an admin page that doesn't trigger admin_init (because we're not yet logged in, for example), or for the XMLRPC mechanic which is basically an admin endpoint
+		if((stripos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false && ($GLOBALS['pagenow'] === 'wp-login.php' || $_SERVER['PHP_SELF'] === '/wp-login.php') && stripos($_SERVER['REQUEST_URI'], 'redirect_to='.admin_url()) !== false) || (defined('XMLRPC_REQUEST') && XMLRPC_REQUEST))
+			add_action('init', 'qweb_aca_ip_check');
+	}
