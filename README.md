@@ -13,7 +13,7 @@ You can optionally choose to allow or disallow access through known public proxy
 
 The plugin creates a cache of IP information and automatically clears cache files older than one week. This reduces the number of lookup requests and keeps your website responsive, without creating an unnecessarily large cache.
 
-As a single 17kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API](https://apis.qweb.co.uk/ip-lookup/), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
+As a single 19kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API](https://apis.qweb.co.uk/ip-lookup/), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
 
 This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/ip-lookup/) for IP to country lookups, and will not function without an active API key from this service. QWeb does provide a FREE tier for this API service, suitable for most websites. Please refer to the [QWeb Ltd API Terms of Use](https://apis.qweb.co.uk/console/eula) and [QWeb Ltd Privacy Policy](https://www.qweb.co.uk/privacy-policy).
 
@@ -25,6 +25,10 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 * Optionally choose to allow or disallow known proxy servers, even when they're located within the allowed countries.
 
 # Changelog
+
+= 1.1.1 =
+* Renamed global scope $cacheDirectory variable to $qwebAcaCacheDirectory to avoid potential conflicts with cache plugins
+* Refactored for performance and better readability
 
 = 1.1.0 =
 * Reworked to no longer block calls for admin-ajax.php, because too many front-end plugins use it for legitimate requests.
