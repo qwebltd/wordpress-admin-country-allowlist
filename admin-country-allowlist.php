@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.1.1
+Version:      1.2.0
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -46,7 +46,7 @@ Text Domain:  admin-country-allowlist
 		if($response !== '')
 			return json_decode($response);
 		else
-			return 'There was an error communicating with the lookup service.';
+			return 'There was an error communicating with the lookup service. If this problem persists, your server might be blocked or having network issues. Contact your web host for support.';
 	}
 
 	// Function to look up the country of the visitors IP and check that it's in the allow list
@@ -78,23 +78,34 @@ Text Domain:  admin-country-allowlist
 					$data = qweb_aca_ip_lookup($accessKey, $ip);
 
 					// And cache the result
-					if($data->answer == 'success')
+					if(isset($data->answer) && $data->answer == 'success')
 						file_put_contents($cacheFile, json_encode($data));
 				}
 
-				if(isset($data) && $data->answer == 'success') {
-					// Check that the returned country code is in our allowlist and, if allow_known_proxies is false, check that the IP isn't a known proxy
-					if(($data->is_proxy == 'yes' && !get_option('qweb_aca_allow_known_proxies')) || !in_array($data->country, $allowedCountries)) {
-						// Access isn't allowed
-						header('HTTP/1.0 403 Forbidden');
-						exit;
+				if(isset($data)) {
+					if(isset($data->answer)) {
+						if($data->answer == 'success') {
+							// Check that the returned country code is in our allowlist and, if allow_known_proxies is false, check that the IP isn't a known proxy
+							if(($data->is_proxy == 'yes' && !get_option('qweb_aca_allow_known_proxies')) || !in_array($data->country, $allowedCountries)) {
+								// Access isn't allowed
+								header('HTTP/1.0 403 Forbidden');
+								exit;
+							}
+						} else {
+							wp_mail(get_bloginfo('admin_email'), get_bloginfo('name').' - '.__('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
+								__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
+								esc_html($ip),
+								esc_html($data->answer)
+							));
+						}
+					} else {
+						wp_mail(get_bloginfo('admin_email'), get_bloginfo('name').' - '.__('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
+							__('The following error was generated when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
+							esc_html($ip),
+							esc_html($data)
+						));
 					}
-				} else
-					wp_mail(get_bloginfo('admin_email'), __('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
-						__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
-						esc_html($ip),
-						esc_html($data->answer)
-					));
+				}
 			}
 		}
 
