@@ -26,6 +26,10 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 
 # Changelog
 
+= 1.2.0 =
+* Added site name to error notification emails to ease managing multiple websites.
+* Reworked error notification emails to now also notify if communication with the API failed completely.
+
 = 1.1.1 =
 * Renamed global scope $cacheDirectory variable to $qwebAcaCacheDirectory to avoid potential conflicts with cache plugins
 * Refactored for performance and better readability
