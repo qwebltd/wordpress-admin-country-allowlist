@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.2.0
+Version:      1.2.1
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -193,6 +193,20 @@ Text Domain:  admin-country-allowlist
 		submit_button( __('Save Settings', 'admin-country-allowlist'));
 ?>
 		</form>
+		<h2><?php echo __('Statistics', 'admin-country-allowlist'); ?></h2>
+		<p><?php echo __('You can see how many IP lookups are being processed via the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a>. Simply log in, locate your access key from the list, and tap the <strong>Usage report</strong> icon.', 'admin-country-allowlist'); ?></p>
+		<p><?php echo __('Requests to the lookup service are only made once per unique IP, and only if that IP is attempting admin access. This plugin then caches the response for a week, so legitimate administrators and the occasional attacks tend not to invoke many lookups. For most websites, you should only need a free access key and likely won\'t come close to the requests quota. If the usage graphs suggest otherwise, or you receive an email notification from this plugin because you\'re reaching the quota, then you can upgrade to a paid tier at any time by purchasing a subscription or switching an existing subscription to another tier.', 'admin-country-allowlist'); ?></p>
+		<p><a class="button" href="https://apis.qweb.co.uk/console"><?php echo __('QWeb API Console', 'admin-country-allowlist'); ?></a></p>
+<?php
+		// Output content below the settings form, once activated and in use.
+		if(trim(get_option('qweb_aca_access_key')) != '') {
+?>
+		<h2><?php echo __('Like this plugin?', 'admin-country-allowlist'); ?></h2>
+		<p><?php echo __('Please <a href="https://wordpress.org/support/plugin/admin-country-allowlist/reviews/#new-post" target="_blank">leave a review</a> to help other website owners know what you think of this plugin.', 'admin-country-allowlist'); ?></p>
+		<p><a class="button" href="https://wordpress.org/support/plugin/admin-country-allowlist/reviews/#new-post"><?php echo __('Review', 'admin-country-allowlist'); ?></a></p>
+<?php
+		}
+?>
 	</div>
 <?php
 	}
@@ -380,9 +394,10 @@ Text Domain:  admin-country-allowlist
 			if(trim(get_option('qweb_aca_access_key')) == '') {
 				function qweb_aca_access_key_missing() {
 					printf(
-						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p></div>',
+						'<div class="%1$s"><h2>'.__('Admin Country Allowlist', 'admin-country-allowlist').'</h2><p>%2$s</p><p><a class="button" href="'.admin_url( 'options-general.php?page='.plugin_basename(__FILE__)).'">%3$s</a></p></div>',
 						esc_attr('notice notice-error'),
-						esc_html__('You need to obtain an API access key before this plugin can secure your website. Refer to the settings page for details.', 'admin-country-allowlist')
+						esc_html__('You need to obtain an API access key before this plugin can secure your website. Refer to the settings page for details.', 'admin-country-allowlist'),
+						esc_html__('Settings', 'admin-country-allowlist')
 					);
 				}
 
