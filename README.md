@@ -26,6 +26,11 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 
 # Changelog
 
+= 1.2.1 =
+* Added information to the settings page about where to find usage reports.
+* Added a Settings button to the admin panel notice that appears if you haven't yet entered an access key.
+* Added a screenshot to the plugin information page to better show its simplicity.
+
 = 1.2.0 =
 * Added site name to error notification emails to ease managing multiple websites.
 * Reworked error notification emails to now also notify if communication with the API failed completely.
