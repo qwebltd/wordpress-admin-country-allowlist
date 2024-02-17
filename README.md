@@ -26,6 +26,9 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 
 # Changelog
 
+= 1.3.0 =
+* When the API usage quota for a given access key is reached, we now only trigger one email instead of triggering for every lookup attempt.
+
 = 1.2.1 =
 * Added information to the settings page about where to find usage reports.
 * Added a Settings button to the admin panel notice that appears if you haven't yet entered an access key.
