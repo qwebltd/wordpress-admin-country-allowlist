@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.2.1
+Version:      1.3.0
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -85,6 +85,10 @@ Text Domain:  admin-country-allowlist
 				if(isset($data)) {
 					if(isset($data->answer)) {
 						if($data->answer == 'success') {
+							// If we've received a successful response, we must be within the quota allowance so remove any previously set 'reached' flag
+							if(get_transient('qweb_aca_quota_reached') !== false)
+								delete_transient('qweb_aca_quota_reached');
+
 							// Check that the returned country code is in our allowlist and, if allow_known_proxies is false, check that the IP isn't a known proxy
 							if(($data->is_proxy == 'yes' && !get_option('qweb_aca_allow_known_proxies')) || !in_array($data->country, $allowedCountries)) {
 								// Access isn't allowed
@@ -92,11 +96,21 @@ Text Domain:  admin-country-allowlist
 								exit;
 							}
 						} else {
-							wp_mail(get_bloginfo('admin_email'), get_bloginfo('name').' - '.__('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
-								__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
-								esc_html($ip),
-								esc_html($data->answer)
-							));
+							// We don't want to bombard inboxes when an access quota is reached, so:
+							$quotaReached = stripos($data->answer, 'this limit has already been reached') !== false;
+
+							if(!$quotaReached || ($quotaReached && get_transient('qweb_aca_quota_reached') === false)) {
+								if($quotaReached) {
+									set_transient('qweb_aca_quota_reached', true);
+									$data->answer .= ' Blocking is now paused until you fall back within your quota.';
+								}
+
+								wp_mail(get_bloginfo('admin_email'), get_bloginfo('name').' - '.__('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
+									__('The following response was received from the lookup API when attempting to verify the country of IP %1$s: %2$s', 'admin-country-allowlist'),
+									esc_html($ip),
+									esc_html($data->answer)
+								));
+							}
 						}
 					} else {
 						wp_mail(get_bloginfo('admin_email'), get_bloginfo('name').' - '.__('IP to country lookup failed!', 'admin-country-allowlist'), sprintf(
