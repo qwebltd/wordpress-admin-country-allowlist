@@ -3,7 +3,7 @@
 Plugin Name:  Admin Country Allowlist
 Plugin URI:   https://github.com/qwebltd/wordpress-admin-country-allowlist
 Description:  By far the simplest country allowlist plugin available. Locks admin panel and XMLRPC access to a given list of allowed countries using QWeb's IP to country lookup API.
-Version:      1.3.0
+Version:      1.4.0
 Author:       QWeb Ltd
 Author URI:   https://www.qweb.co.uk
 License:      MIT
@@ -138,6 +138,7 @@ Text Domain:  admin-country-allowlist
 		add_option('qweb_aca_access_key', '');
 		add_option('qweb_aca_allowed_countries', array());
 		add_option('qweb_aca_allow_known_proxies', false);
+		add_option('qweb_aca_block_xmlrpc_access', false);
 
 		// Schedule the cache cleaning cron
 		if(!wp_next_scheduled('qweb_aca_clear_old_cache_event'))
@@ -172,6 +173,11 @@ Text Domain:  admin-country-allowlist
 		delete_option('qweb_aca_access_key');
 		delete_option('qweb_aca_allowed_countries');
 		delete_option('qweb_aca_allow_known_proxies');
+		delete_option('qweb_aca_block_xmlrpc_access');
+
+		// Remove htaccess entries
+		if(extract_from_markers(get_home_path().'.htaccess', 'QWeb Admin Country Allowlist XMLRPC Blocking'))
+			insert_with_markers(get_home_path().'.htaccess', 'QWeb Admin Country Allowlist XMLRPC Blocking', '');
 
 		return true;
 	}
@@ -190,7 +196,8 @@ Text Domain:  admin-country-allowlist
 ?>
 	<div class="wrap">
 		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-		<p><?php echo __('Generate an access key for the IP Lookup API via the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a> and enter it here.', 'admin-country-allowlist'); ?></p>
+		<p><?php echo __('Use these settings to restrict access to your Wordpress administration panel, and the XMLRPC mechanism. You should allow access to only the countries where you know legitimate administrators need to log in from, so that for most of the world, your administration panel is inaccessible and malicious bots will have a much harder time finding security holes to exploit.', 'admin-country-allowlist'); ?></p>
+		<p><?php echo __('Generate an access key for the IP Lookup API via the <a href="https://apis.qweb.co.uk/console" target="_blank">QWeb API Console</a> and enter it here. <strong>Access keys are FREE!</strong>', 'admin-country-allowlist'); ?></p>
 <?php
 		// show error/update messages
 		settings_errors( 'qweb_aca_messages' );
@@ -290,11 +297,42 @@ Text Domain:  admin-country-allowlist
 			// It doesn't matter if the array is empty at this point, it'll just trigger the qweb_aca_empty_countries_list notice if that happens
 			return $sanitisedCodes;
 		}));
+
 		register_setting( 'qweb_aca_options', 'qweb_aca_allow_known_proxies', array('type' => 'boolean', 'description' => 'Should access be granted to known proxy IPs in these countries?', 'sanitize_callback' => function($input) {
 			// Sanitise the field input
 
 			// Output sanitised value for Wordpress to save
-			// We basically only care if the submited value is a yes. Anything else and we can just consider it a no.
+			// We basically only care if the submitted value is a yes. Anything else and we can just consider it a no.
+			return ($input == 'yes');
+		}));
+
+		register_setting( 'qweb_aca_options', 'qweb_aca_block_xmlrpc_access', array('type' => 'boolean', 'description' => 'Should access to XMLRPC be blocked completely?', 'sanitize_callback' => function($input) {
+			// Sanitise the field input
+
+			// If the submitted value is a yes, try to write a htaccess entry. Anything else and we can just consider it a no.
+			if($input == 'yes') {
+				if(!insert_with_markers(get_home_path().'.htaccess', 'QWeb Admin Country Allowlist XMLRPC Blocking', array(
+					'<Files xmlrpc.php>',
+					'	Order Deny,Allow',
+					'	Deny from all',
+					'</Files>',
+				))) {
+					add_settings_error('qweb_aca_block_xmlrpc_access', 'qweb_aca_block_xmlrpc_access_error', __('Failed to update your .htaccess file with XMLRPC access blocking lines. Please ensure this file is accessible with read:write permissions', 'admin-country-allowlist'), 'error');
+
+					return get_option('qweb_aca_block_xmlrpc_access'); // Revert to the original setting
+				}
+			} else {
+				// Remove htaccess entries
+				if(extract_from_markers(get_home_path().'.htaccess', 'QWeb Admin Country Allowlist XMLRPC Blocking')) {
+					if(!insert_with_markers(get_home_path().'.htaccess', 'QWeb Admin Country Allowlist XMLRPC Blocking', '')) {
+						add_settings_error('qweb_aca_block_xmlrpc_access', 'qweb_aca_block_xmlrpc_access_error', __('Failed to remove the XMLRPC access blocking lines from your .htaccess file. Please ensure this file is accessible with read:write permissions', 'admin-country-allowlist'), 'error');
+
+						return get_option('qweb_aca_block_xmlrpc_access'); // Revert to the original setting
+					}
+				}
+			}
+
+			// If we get this far, then everything worked and we can store the submitted value as intended.
 			return ($input == 'yes');
 		}));
 
@@ -324,6 +362,18 @@ Text Domain:  admin-country-allowlist
 					<option value="no"'.(!$currentValue ? ' selected="selected"' : '').'>'.__('Disallow', 'admin-country-allowlist').'</option>
 				</select>
 				<p class="description">'.__('If an IP is from an allowed country, but we know it to be a proxy server, should we still allow access?', 'admin-country-allowlist').'</p>';
+		}, __FILE__, 'qweb_aca_options_general');
+
+		add_settings_field( 'qweb_aca_block_xmlrpc_access', 'Block XMLRPC access?', function() {
+			$currentValue = get_option('qweb_aca_block_xmlrpc_access');
+
+			echo '
+				<select name="qweb_aca_block_xmlrpc_access" id="qweb_aca_block_xmlrpc_access">
+					<option value="yes"'.($currentValue ? ' selected="selected"' : '').'>'.__('Block access completely', 'admin-country-allowlist').'</option>
+					<option value="no"'.(!$currentValue ? ' selected="selected"' : '').'>'.__('Allow access to authorised countries only', 'admin-country-allowlist').'</option>
+				</select>
+				<p class="description">'.__('If you\'re certain that nothing needs access to the Wordpress XMLRPC mechanism, then blocking access completely will save from having to perform API lookups for these requests, which can dramatically reduce the number of API requests that this website needs to invoke and help keep you within your API usage quota.', 'admin-country-allowlist').'</p>
+				<p class="description"><strong>'.__('If you don\'t know what XMLRPC is, then you can almost certainly block access completely.', 'admin-country-allowlist').'</strong></p>';
 		}, __FILE__, 'qweb_aca_options_general');
 	}
 
