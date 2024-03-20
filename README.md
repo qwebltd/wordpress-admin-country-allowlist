@@ -13,7 +13,7 @@ You can optionally choose to allow or disallow access through known public proxy
 
 The plugin creates a cache of IP information and automatically clears cache files older than one week. This reduces the number of lookup requests and keeps your website responsive, without creating an unnecessarily large cache.
 
-As a single 19kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API](https://apis.qweb.co.uk/ip-lookup/), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
+As a single 25kb file, this is an exceptionally lightweight plugin. Built to be efficient, and using QWeb's incredibly responsive [IP lookup API](https://apis.qweb.co.uk/ip-lookup/), the Admin Country Allowlist plugin should be a part of your standard security kit for any Wordpress websites that you manage.
 
 This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/ip-lookup/) for IP to country lookups, and will not function without an active API key from this service. QWeb does provide a FREE tier for this API service, suitable for most websites. Please refer to the [QWeb Ltd API Terms of Use](https://apis.qweb.co.uk/console/eula) and [QWeb Ltd Privacy Policy](https://www.qweb.co.uk/privacy-policy).
 
@@ -25,6 +25,10 @@ This plugin relies on [QWeb's IP to country lookup API](https://apis.qweb.co.uk/
 * Optionally choose to allow or disallow known proxy servers, even when they're located within the allowed countries.
 
 # Changelog
+
+= 1.4.0 =
+* Added an option to deny access to the XMLRPC mechanism completely, reducing the number of required API lookups.
+* Added blurb to the plugins settings page explaining what this page is for, because the current administrator might not be the original installer.
 
 = 1.3.0 =
 * When the API usage quota for a given access key is reached, we now only trigger one email instead of triggering for every lookup attempt.
